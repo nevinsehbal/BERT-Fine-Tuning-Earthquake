@@ -6,7 +6,7 @@ import pandas as pd
 import os
 
 # flags
-READ_FROM_CSV = True
+READ_FROM_CSV = False
 PLOT_SHOW = False
 PLOT_SAVE = False
 SAVE_TO_CSV = not READ_FROM_CSV
@@ -19,7 +19,7 @@ if(PLOT_SAVE or SAVE_TO_CSV):
 
 # Number of stations
 NUM_OF_STATIONS = 6
-NUM_OF_SAMPLES_PER_STATION = 10
+NUM_OF_SAMPLES_PER_STATION = 100
 
 def get_stations():
     # station identifiers are hard-coded 6 coordinate values (latitude, longitude), between latitude 36.54 and 42.93, and longitude 27.92 and 42.08,

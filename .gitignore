@@ -7,6 +7,9 @@ __pycache__/
 *.so
 sinusoidal_dataset/*
 logs/*
+logs_*/*
+second_stage_logs/*
+third_stage_logs/*
 
 # Distribution / packaging
 .Python
