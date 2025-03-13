@@ -57,6 +57,15 @@ class TimeSeriesBERT(nn.Module):
         self.sample_length = sample_length
         self.patch_size = patch_size
         self.stage = stage
+        if self.stage == 2:
+                self.freeze_layers()
+
+    def freeze_layers(self):
+        """Freeze the CustomEmbedding and BERT layers."""
+        for param in self.embeddings.parameters():
+            param.requires_grad = False
+        for param in self.bert.parameters():
+            param.requires_grad = False
 
     def forward(self, x, station_ids):
         """

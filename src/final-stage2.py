@@ -9,18 +9,27 @@ import time
 import random
 import numpy as np
 from models import TimeSeriesBERT
-from utils import split_dataset, normalize_station_data, plot_patches
+from utils import split_dataset, normalize_station_data, plot_patches, parse_arguments_2_3
 
+args = parse_arguments_2_3()
+
+# Access arguments
+first_stage_model_path = args.model_path
+EPOCHS = args.epochs
+BATCH_SIZE = args.batch_size
+PATCH_SIZE = args.patch_size
+SAMPLE_LENGTH = args.sample_length
+LEARNING_RATE = args.learning_rate
+
+model_path_forecast_id = first_stage_model_path.split('/')[-2]
+# Generate forecast directory based on input arguments and timestamp
+forecast_dir = f"forecasts_{int(time.time())}_epochs{EPOCHS}_patch{PATCH_SIZE}_batch{BATCH_SIZE}_sample{SAMPLE_LENGTH}_lr{LEARNING_RATE}_model{model_path_forecast_id}"
 save_dir = 'logs_second_stage'
-forecast_dir = 'forecasts'+str(int(time.time()))
-first_stage_model_path = '/home/hekimoglu/workspace/git/final/BERT-Fine-Tuning-Earthquake/logs/patches1737315105.74911/final_model.pt'
+
 EMBED_DIM = 768  # Embedding dimension for BERT
-PATCH_SIZE = 50
-SAMPLE_LENGTH = 600
 NUM_CHANNELS = 3
 NUM_STATIONS = 6
-EPOCHS = 50
-BATCH_SIZE = 4
+
 SEED = 42
 torch.manual_seed(SEED)
 np.random.seed(SEED)
@@ -28,24 +37,25 @@ random.seed(SEED)
 os.makedirs(save_dir, exist_ok=True)
 os.makedirs(os.path.join(save_dir, forecast_dir), exist_ok=True)
 
+
 # Load the saved model state dictionary
 model = TimeSeriesBERT(EMBED_DIM, PATCH_SIZE, SAMPLE_LENGTH, NUM_CHANNELS, NUM_STATIONS, stage=2)
 model.load_state_dict(torch.load(first_stage_model_path))
 # Modify the output layer (example: change output size to 64)
 new_output_layer = nn.Linear(model.bert.config.hidden_size, PATCH_SIZE)
 model.output_layer = new_output_layer
-# Freeze the CustomEmbedding and Bert layers
-for param in model.embeddings.parameters():
-    param.requires_grad = False
+# # Freeze the CustomEmbedding and Bert layers
+# for param in model.embeddings.parameters():
+#     param.requires_grad = False
 
-for param in model.bert.parameters():
-    param.requires_grad = False
+# for param in model.bert.parameters():
+#     param.requires_grad = False
 
 # Reinitialize optimizer for unfrozen layers
-optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-5)
+optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=LEARNING_RATE)
 
 # Load both data and station data
-data, station_data = dataset_loader.load_sinusoidal_samples_from_csv(sample_length=1200) # 600 for input and 600 for output
+data, station_data = dataset_loader.load_sinusoidal_samples_from_csv(sample_length=SAMPLE_LENGTH*2) # 600 for input and 600 for output
 # Normalize station data
 station_data = normalize_station_data(station_data)
 
@@ -204,6 +214,19 @@ for test_batch in test_data_loader:
 
 print(f"Test Loss: {sum(test_losses) / len(test_data_loader):.4f}")
 
-# Plot predictions for the first batch of test data
+# # Plot predictions for the first batch of test data
 
-plot_patches(0, test_inputs, test_actuals, test_predictions, sample_idx=0, note='test')
+# plot_patches(0, test_inputs, test_actuals, test_predictions, sample_idx=0, note='test')
+
+plot_patches(
+    stage=2,
+    epoch=0,
+    input_data=test_inputs,
+    actual_data=test_actuals,
+    predicted_data=test_predictions,
+    sample_idx=0,  # Optional: Specify which sample to plot
+    save_dir=save_dir,
+    forecast_dir=forecast_dir,
+    SAMPLE_LENGTH=SAMPLE_LENGTH,
+    note='test'
+    )

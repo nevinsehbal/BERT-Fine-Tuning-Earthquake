@@ -1,4 +1,5 @@
 import torch
+import argparse
 
 def split_dataset(data, train_ratio=0.8, val_ratio=0.1, test_ratio=0.1):
     """
@@ -65,6 +66,8 @@ def plot_patches(stage,
         note: Additional note for saving the plot.
         title: Title of the plot (default: "Reconstructed Patches").
     """
+    stage = int(stage)
+    save_path = ""  # Default assignment to avoid unbound variable error
     if stage == 1:
         # Plot reconstructed patches (Stage 1)
         fig, axes = plt.subplots(num_patches, 3, figsize=(12, num_patches * 3))
@@ -80,9 +83,8 @@ def plot_patches(stage,
 
         plt.tight_layout()
         save_path = os.path.join(save_dir, patches_dir, title + ".png")
-        print("saved the plot to:", save_path)
     
-    elif stage in [2, 3]:
+    elif stage == 2 or stage == 3:
         # Plot forecasted patches (Stage 2 and 3)
         num_channels = input_data.shape[1]
         sample_input = input_data[sample_idx].cpu().numpy()
@@ -106,8 +108,27 @@ def plot_patches(stage,
             filename = f"forecast_epoch_{epoch}_{note}.png"
         save_path = os.path.join(save_dir, forecast_dir, filename)
     
+    else:
+        print("Invalid stage number. Please provide a valid stage number (1, 2, or 3).")
+    
     # Save and close the plot
     if not os.path.exists(os.path.dirname(save_path)):
         os.makedirs(os.path.dirname(save_path))
     plt.savefig(save_path)
     plt.close()
+
+# Argument Parser
+def parse_arguments_2_3():
+    parser = argparse.ArgumentParser(description="Time Series BERT Forecasting 2nd Stage")
+
+    # Add arguments
+    parser.add_argument('--model_path', type=str, required=True, help="Path to the first stage model")
+    parser.add_argument('--epochs', type=int, default=50, help="Number of epochs for training")
+    parser.add_argument('--learning_rate', type=float, default=1e-5, help="Learning rate for training")
+    parser.add_argument('--batch_size', type=int, default=4, help="Batch size for training")
+    parser.add_argument('--patch_size', type=int, default=50, help="Size of each patch")
+    parser.add_argument('--sample_length', type=int, default=600, help="Length of each sample sequence")
+
+    # Parse the arguments
+    args = parser.parse_args()
+    return args

@@ -8,7 +8,7 @@ import os
 # flags
 READ_FROM_CSV = True
 PLOT_SHOW = True
-PLOT_SAVE = False
+PLOT_SAVE = True
 SAVE_TO_CSV = not READ_FROM_CSV
 RATIO = 10
 dataset_dir = "sinusoidal_dataset"
@@ -126,7 +126,7 @@ else:  # read from csv
 
 if PLOT_SHOW or PLOT_SAVE:
     # Plot samples
-    fig, axes = plt.subplots(6, 2, figsize=(15, 10))
+    fig, axes = plt.subplots(6, 2, figsize=(15, 12))
     axes = axes.flatten()
     time_vector = np.linspace(0, duration, n_samples, endpoint=False)
     ratio = RATIO
@@ -141,9 +141,9 @@ if PLOT_SHOW or PLOT_SAVE:
             ax.plot(short_time_vector, json.loads(sample['Channel_1'])[:n_samples // ratio], label='Channel 1')
             ax.plot(short_time_vector, json.loads(sample['Channel_2'])[:n_samples // ratio], label='Channel 2')
             ax.plot(short_time_vector, json.loads(sample['Channel_3'])[:n_samples // ratio], label='Channel 3')
-            ax.set_title(f"Station {st}, Sample {i + 1}", fontsize=10)
-            ax.set_xlabel("Time (s)", fontsize=9)
-            ax.set_ylabel("Amplitude", fontsize=9)
+            ax.set_title(f"Sanal İstasyon {st+1}, Örnek {i + 1}", fontsize=20)
+            ax.set_xlabel("Zaman (s)", fontsize=18)
+            ax.set_ylabel("Genlik", fontsize=18)
             ax.grid(True)
             ax.legend(fontsize=8, loc='upper right')
 
@@ -151,6 +151,6 @@ if PLOT_SHOW or PLOT_SAVE:
     fig.subplots_adjust(hspace=0.4, wspace=0.3)
     plt.tight_layout()
     if(PLOT_SAVE):
-        plt.savefig(os.path.join(dataset_dir, "example_samples_60sec_w_ratio_"+str(ratio)+".png"))
+        plt.savefig(os.path.join(dataset_dir, "siu_example_samples_60sec_w_ratio_"+str(ratio)+".png"))
     if(PLOT_SHOW):
         plt.show()
